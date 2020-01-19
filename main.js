@@ -1,10 +1,10 @@
-const baseURL = "https://swapi.co/api/";
+//const baseURL = "https://swapi.co/api/";
 
-function  getData (type, cb) { // callback
+function  getData (url, cb) { // callback
     var xhr = new XMLHttpRequest();
     //var data; // sotre object in a variable to manipulate the response text
     
-    xhr.open("GET", baseURL + type + "/");
+    xhr.open("GET", url);
     xhr.send();
     
     xhr.onreadystatechange = function() {
@@ -26,16 +26,33 @@ function getTableHeaders(obj) { //new function that takes a single object
     // using this backtick, or back quote, formation here. Those are not standard single quotes. soemthing called template literal
 }
 
+function generatePaginationButtons(next, prev) {
+    if (next && prev) {
+        return  `<button onclick="writeToDocument('${prev}')">Previous</button>
+                 <button onclick="writeToDocument('${next}')">Next</button>`;
+    } else if (next && !prev) { 
+        return  `<button onclick="writeToDocument('${next}')">Next</button>`;
+    } else if (!next && prev) {
+        return `<button onclick="writeToDocument('${prev}')">Previous</button>`;
+    }  
+} 
+
 //option 3
-function writeToDocument(type) {
+function writeToDocument(url) {
     var tableRows = []; // tableRows will house each row of data for us
     var el = document.getElementById("data"); //to store our data ID in VAR el
     el.innerHTML = ""; // this code will clear the code everytime the button gets clicked
-    getData(type, function(data) {
+    getData(url, function(data) {
         //unpacking data dir = directory
         //console.dir(data); //CHECK WHEN THIS IS REMOVED
         //unpacking a bit further
-        data = data.results;
+       
+       var pagination;
+       if (data.next || data.previous) { //pagination buttons
+            pagination = generatePaginationButtons(data.next, data.previous)
+       }    
+       
+       data = data.results;
         var tableHeaders = getTableHeaders(data[0]);
         
         data.forEach(function(item) {
@@ -54,10 +71,11 @@ function writeToDocument(type) {
             //el.innerHTML += "<p>"+ item.name + "</p>";
         });
         
-        el.innerHTML = `<table>${tableHeaders}${tableRows}</table>`;//use backtick is IMPORTANT!!!
+        el.innerHTML = `<table>${tableHeaders}${tableRows}</table>${pagination}`.replace(/,/g, "");//use backtick is IMPORTANT!!!
     });
 }
 
+/////////////////////////////////////////////////////////////////
 //option 2
 //function printDataToConsole(data) {
 //    console.log(data);
